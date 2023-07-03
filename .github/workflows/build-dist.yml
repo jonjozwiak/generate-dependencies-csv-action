@@ -2,6 +2,8 @@ name: Create Action dist on push
 
 on:
   push:
+  
+permissions: write-all
 
 jobs:
   create-action-dist:
@@ -15,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '16'
 
       - name: Install app dependencies
         run: |
@@ -31,5 +33,5 @@ jobs:
           author_name: Action workflow
           author_email: dave@digitalnoise.net
           message: "dist created from ${{ github.ref }} for sha (${{ github.sha }})"
-        env:
-          GITHUB_TOKEN: ${{ secrets.DIST_TOKEN }}
+        #env:
+        #  GITHUB_TOKEN: ${{ secrets.DIST_TOKEN }}
