@@ -14534,7 +14534,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		});
 
 		hasNextPage = getVulnResult.repository.vulnerabilityAlerts.pageInfo.hasNextPage;
-		const repoVulnerabilities = getVulnResult.data.repository.vulnerabilityAlerts.nodes;
+		const repoVulnerabilities = getVulnResult.repository.vulnerabilityAlerts.nodes;
 
 		console.log(`vulnerabilities: ${getVulnResult}`);
 
