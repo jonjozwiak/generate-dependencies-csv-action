@@ -301,10 +301,13 @@ async function DumpDependencies() {
 					fileLines.splice(fileLines.indexOf(line), 1, newLine);
 				} else {
 					// Append empty vulnSummaryLine to the matched line in fileLines
+					console.log(`${indent.join('')}${org_name}/${repo}: ${packageName} has no vulnerabilities.  Adding to list...`);
 					let newLine = line + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0';
 					fileLines.splice(fileLines.indexOf(line), 1, newLine);
 				}
-			}			
+			}		
+			
+			console.log("Sorting...");
 
 			let sorted = fileLines.sort((a, b) => {
 				let packageA = a.split('\t')[4]; // manifest
