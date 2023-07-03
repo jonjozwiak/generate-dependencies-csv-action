@@ -14585,7 +14585,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 				vulnFileLinesSummary[packageName].critical++;
 			} else if (severity === 'HIGH') {
 				vulnFileLinesSummary[packageName].high++;
-				Console.log(`Adding high severity vulnerability for ${packageName}`)
+				console.log(`Adding high severity vulnerability for ${packageName}`)
 			} else if (severity === 'MODERATE') {
 				vulnFileLinesSummary[packageName].moderate++;
 			} else if (severity === 'LOW') {
