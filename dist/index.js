@@ -14566,6 +14566,11 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		let severity = line.split('\t')[3];
 		let dismissedAt = line.split('\t')[5];
 
+		console.log(`Line: ${line}`);
+		console.log(`packageName: ${packageName}`);
+		console.log(`severity: ${severity}`);
+		console.log(`dismissedAt: ${dismissedAt}`);
+		
 		if (!vulnFileLinesSummary[packageName]) {
 			vulnFileLinesSummary[packageName] = {
 				critical: 0,
