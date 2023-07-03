@@ -281,7 +281,7 @@ async function DumpDependencies() {
 			vulnFileLinesSummary = [];
 			vulnSummaryLines = [];
 			headerRow = "packageName\tpackageVersion\tpackageEcosystem\tmanifestFilename\tmanifestOwner\tpackageLicenseName\tpackageLicenseId\tpackgeLicenseUrl\tpackageHasDependencies\tCriticalVulnerabilities\tHighVulnerabilities\tModerateVulnerabilities\tLowVulnerabilities\n";
-			await findDeps(org_name, repo);
+			//await findDeps(org_name, repo);
 
 			await getVulnerabilityAlerts(org_name, repo);
 
