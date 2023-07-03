@@ -143,6 +143,14 @@ const getVulnerabilityAlerts = async (org, repo) => {
 			};
 		}
 
+		if (dismissedAt === null) {
+			console.log(`${packageName} dismissedAt is null.`)
+		}
+
+		if (dismissedAt !== null) {
+			console.log(`${packageName} dismissedAt is NOT null.`)
+		}
+
 		//if (dismissedAt === null) {
 			if (severity === 'CRITICAL') {
 				vulnFileLinesSummary[packageName].critical++;
