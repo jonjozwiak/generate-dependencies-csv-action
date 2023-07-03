@@ -19,6 +19,10 @@ let checkedRepos = [];
 let indent = [];
 let firstIndent = false;
 let depth = 0;
+let vulnFileLines = [];
+let vulnFileLinesSummary = [];
+let vulnSummaryLines = [];
+let vulnCheckedRepos = [];
 const rootDirectory = '.'; // Also possible to use __dirname
 const options = {
 	continueOnError: false
@@ -32,6 +36,126 @@ graphql = graphql.defaults({
 		Accept: 'application/vnd.github.hawkgirl-preview+json'
 	}
 });
+
+// Add async function to get vulnerabilityAlerts
+const getVulnerabilityAlerts = async (org, repo) => {
+	const query =
+		`query ($org: String! $repo: String! $cursor: String){
+			repository(owner: $org, name: $repo) {
+				vulnerabilityAlerts(first: 100 after: $cursor) {
+					nodes {
+						id
+						createdAt
+						dismissedAt
+						securityVulnerability {
+							package {
+								name
+							}
+							severity
+							advisory {
+								summary
+								description
+								references {
+									url
+								}
+							}
+						}
+					}
+				}
+			}
+		}`
+
+	let hasNextPage = false;
+	do {
+		console.log(`${indent.join('')}${org}/${repo}: Finding vulnerabilities...`);
+
+		if (vulnCheckedRepos.find(check => check.org == org && check.name == repo) != undefined) { // We've already checked this repo
+			console.log(`${indent.join('')}${org}/${repo}: Already checked.`)
+			return;
+		}
+
+		let getVulnResult = null;
+
+		try {
+			getVulnResult = await graphql({ query, org: org, repo: repo, cursor: pagination });
+		}
+		catch (e) {
+			console.log(`${indent.join('')}${org}/${repo}: GraphQL query failed: ${e.message}`);
+			return;
+		}
+
+		vulnCheckedRepos.push({
+			"org": org,
+			"name": repo
+		});
+
+		hasNextPage = getVulnResult.repository.vulnerabilityAlerts.pageInfo.hasNextPage;
+		const repoVulnerabilities = getVulnResult.repository.vulnerabilityAlerts.nodes;
+
+		for (const repoVulnerability of repoVulnerabilities) {
+			console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.package.name} vulnerability found with severity ${repoVulnerability.securityVulnerability.severity}.`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.advisory.summary}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.advisory.description}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.advisory.references.url}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.severity}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.createdAt}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.dismissedAt}`)
+			//console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.id}`)
+
+			// Write the vulnerability to the file
+			vulnFileLines.push(`${org}/${repo}\t${repoVulnerability.securityVulnerability.package.name}\t${repoVulnerability.securityVulnerability.advisory.summary}\t${repoVulnerability.securityVulnerability.severity}\t${repoVulnerability.createdAt}\t${repoVulnerability.dismissedAt}\t${repoVulnerability.id}`);
+		}
+
+		if (hasNextPage) {
+			console.log('nextpage');
+			pagination = getVulnResult.repository.vulnerabilityAlerts.pageInfo.endCursor;
+		}
+
+	} while (hasNextPage);
+
+	// Generate summary lines
+	let vulnFileLinesSummary = {};
+	for (let line of vulnFileLines) {
+		let packageName = line.split('\t')[1];
+		let severity = line.split('\t')[3];
+		let dismissedAt = line.split('\t')[5];
+
+		if (!vulnFileLinesSummary[packageName]) {
+			vulnFileLinesSummary[packageName] = {
+				critical: 0,
+				high: 0,
+				moderate: 0,
+				low: 0
+			};
+		}
+
+		if (dismissedAt === null) {
+			if (severity === 'CRITICAL') {
+				vulnFileLinesSummary[packageName].critical++;
+			} else if (severity === 'HIGH') {
+				vulnFileLinesSummary[packageName].high++;
+			} else if (severity === 'MODERATE') {
+				vulnFileLinesSummary[packageName].moderate++;
+			} else if (severity === 'LOW') {
+				vulnFileLinesSummary[packageName].low++;
+			}
+		}
+	}
+
+	for (let packageName in vulnFileLinesSummary) {
+		let vulnCounts = vulnFileLinesSummary[packageName];
+		let line = `${org}/${repo}\t${packageName}\t${vulnCounts.critical}\t${vulnCounts.high}\t${vulnCounts.moderate}\t${vulnCounts.low}`;
+		vulnSummaryLines.push(line);
+  }
+
+  // Output summary lines
+  //console.log(`${indent.join('')}${org}/${repo}: Vulnerability summary:`);
+  //console.log(`${indent.join('')}${org}/${repo}: Package\tCritical\tHigh\tModerate\tLow`);
+  //for (let line of vulnSummaryLines) {
+  //  console.log(`${indent.join('')}${org}/${repo}: ${line}`);
+  //}
+}
+
 
 const findDeps = async (org, repo) => {
 	const query =
@@ -138,8 +262,6 @@ const findDeps = async (org, repo) => {
 	} while (hasNextPage);
 }
 
-
-
 DumpDependencies();
 
 async function DumpDependencies() {
@@ -153,10 +275,37 @@ async function DumpDependencies() {
 			const outfile = `./${org_name}-${repo}-dependency-list.csv`;
 			console.log(`${indent.join('')}${org_name}/${repo}: Saving dependencies to ${outfile}...`);
 			checkedRepos = [];
+			vulnCheckedRepos = [];
 			files.push(outfile);
 			fileLines = [];
-			headerRow = "packageName\tpackageVersion\tpackageEcosystem\tmanifestFilename\tmanifestOwner\tpackageLicenseName\tpackageLicenseId\tpackgeLicenseUrl\tpackageHasDependencies";
+			vulnFileLinesSummary = [];
+			vulnSummaryLines = [];
+			headerRow = "packageName\tpackageVersion\tpackageEcosystem\tmanifestFilename\tmanifestOwner\tpackageLicenseName\tpackageLicenseId\tpackgeLicenseUrl\tpackageHasDependencies\tCriticalVulnerabilities\tHighVulnerabilities\tModerateVulnerabilities\tLowVulnerabilities\n";
 			await findDeps(org_name, repo);
+
+			await getVulnerabilityAlerts(org_name, repo);
+
+			// For line in filelines, add SummaryLines if package name matches
+			for (const line of fileLines) {
+				console.log(`${indent.join('')}${org_name}/${repo}: Checking for vulnerabilities in ${line.split('\t')[0]}...`);
+				let packageName = line.split('\t')[0];
+
+				// Find a package name match in vulnSummaryLines
+				let vulnSummaryLine = vulnSummaryLines.find(line => line.split('\t')[1] == packageName);
+
+				if (vulnSummaryLine != undefined) {
+					console.log(`${indent.join('')}${org_name}/${repo}: ${packageName} has vulnerabilities.  Adding to list...`);
+
+					// Append vulnSummaryLine to the matched line in fileLines
+					let newLine = line + '\t' + vulnSummaryLine.split('\t')[2] + '\t' + vulnSummaryLine.split('\t')[3] + '\t' + vulnSummaryLine.split('\t')[4] + '\t' + vulnSummaryLine.split('\t')[5];
+					fileLines.splice(fileLines.indexOf(line), 1, newLine);
+				} else {
+					// Append empty vulnSummaryLine to the matched line in fileLines
+					let newLine = line + '\t' + '0' + '\t' + '0' + '\t' + '0' + '\t' + '0';
+					fileLines.splice(fileLines.indexOf(line), 1, newLine);
+				}
+			}			
+
 			let sorted = fileLines.sort((a, b) => {
 				let packageA = a.split('\t')[4]; // manifest
 				let packageB = b.split('\t')[4];
