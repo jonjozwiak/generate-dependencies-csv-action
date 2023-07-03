@@ -82,7 +82,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		let getVulnResult = null;
 
 		console.log(`${indent.join('')}${org}/${repo}: Querying GraphQL for vulnerabilities...`);
-
+		console.log(`${indent.join('')}${org}/${repo}: Pagination is ${pagination}`);
 		try {
 			getVulnResult = await graphql({ query, org: org, repo: repo, cursor: pagination });
 		}
