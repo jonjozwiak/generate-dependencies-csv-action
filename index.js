@@ -37,8 +37,6 @@ graphql = graphql.defaults({
 	}
 });
 
-// Delete this comment
-
 // Add async function to get vulnerabilityAlerts
 const getVulnerabilityAlerts = async (org, repo) => {
 	const query =
@@ -74,7 +72,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 
 	let hasNextPage = false;
 	do {
-		console.log(`${indent.join('')}${org}/${repo}: Finding vulnerabilities...`);
+		console.log(`${indent.join('')}${org}/${repo}: Finding vulnerabilities in ${indent.join('')}${org}/${repo}...`);
 
 		if (vulnCheckedRepos.find(check => check.org == org && check.name == repo) != undefined) { // We've already checked this repo
 			console.log(`${indent.join('')}${org}/${repo}: Already checked.`)
@@ -84,7 +82,6 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		let getVulnResult = null;
 
 		console.log(`${indent.join('')}${org}/${repo}: Querying GraphQL for vulnerabilities...`);
-
 
 		try {
 			getVulnResult = await graphql({ query, org: org, repo: repo, cursor: pagination });
@@ -100,9 +97,9 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		});
 
 		hasNextPage = getVulnResult.repository.vulnerabilityAlerts.pageInfo.hasNextPage;
-		const repoVulnerabilities = getVulnResult.repository.vulnerabilityAlerts.nodes;
+		const repoVulnerabilities = getVulnResult.data.repository.vulnerabilityAlerts.nodes;
 
-		console.log(`vulnerabilities: ${repoVulnerabilities}`);
+		console.log(`vulnerabilities: ${getVulnResult}`);
 
 		for (const repoVulnerability of repoVulnerabilities) {
 			console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.package.name} vulnerability found with severity ${repoVulnerability.securityVulnerability.severity}.`)
