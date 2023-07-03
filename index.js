@@ -153,14 +153,16 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		let vulnCounts = vulnFileLinesSummary[packageName];
 		let line = `${org}/${repo}\t${packageName}\t${vulnCounts.critical}\t${vulnCounts.high}\t${vulnCounts.moderate}\t${vulnCounts.low}`;
 		vulnSummaryLines.push(line);
-  }
+    }
+
 
   // Output summary lines
   //console.log(`${indent.join('')}${org}/${repo}: Vulnerability summary:`);
   //console.log(`${indent.join('')}${org}/${repo}: Package\tCritical\tHigh\tModerate\tLow`);
-  //for (let line of vulnSummaryLines) {
-  //  console.log(`${indent.join('')}${org}/${repo}: ${line}`);
-  //}
+  console.log(`${indent.join('')}${org}/${repo}: ${vulnSummaryLines.length} vulnerabilities found.  Details:`);
+  for (let line of vulnSummaryLines) {
+    console.log(`${indent.join('')}${org}/${repo}: ${line}`);
+  }
 }
 
 
