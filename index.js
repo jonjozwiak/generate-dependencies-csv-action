@@ -143,7 +143,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 			};
 		}
 
-		if (dismissedAt === null) {
+		//if (dismissedAt === null) {
 			if (severity === 'CRITICAL') {
 				vulnFileLinesSummary[packageName].critical++;
 			} else if (severity === 'HIGH') {
@@ -154,7 +154,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 			} else if (severity === 'LOW') {
 				vulnFileLinesSummary[packageName].low++;
 			}
-		}
+		//}
 	}
 
 	for (let packageName in vulnFileLinesSummary) {
