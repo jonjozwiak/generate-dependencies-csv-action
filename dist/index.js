@@ -14570,7 +14570,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		console.log(`packageName: ${packageName}`);
 		console.log(`severity: ${severity}`);
 		console.log(`dismissedAt: ${dismissedAt}`);
-		
+
 		if (!vulnFileLinesSummary[packageName]) {
 			vulnFileLinesSummary[packageName] = {
 				critical: 0,
@@ -14585,6 +14585,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 				vulnFileLinesSummary[packageName].critical++;
 			} else if (severity === 'HIGH') {
 				vulnFileLinesSummary[packageName].high++;
+				Console.log(`Adding high severity vulnerability for ${packageName}`)
 			} else if (severity === 'MODERATE') {
 				vulnFileLinesSummary[packageName].moderate++;
 			} else if (severity === 'LOW') {
