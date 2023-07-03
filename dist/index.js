@@ -14520,6 +14520,9 @@ const getVulnerabilityAlerts = async (org, repo) => {
 
 		let getVulnResult = null;
 
+		console.log(`${indent.join('')}${org}/${repo}: Querying GraphQL for vulnerabilities...`);
+
+
 		try {
 			getVulnResult = await graphql({ query, org: org, repo: repo, cursor: pagination });
 		}
@@ -14535,6 +14538,8 @@ const getVulnerabilityAlerts = async (org, repo) => {
 
 		hasNextPage = getVulnResult.repository.vulnerabilityAlerts.pageInfo.hasNextPage;
 		const repoVulnerabilities = getVulnResult.repository.vulnerabilityAlerts.nodes;
+
+		console.log(`vulnerabilities: ${repoVulnerabilities}`);
 
 		for (const repoVulnerability of repoVulnerabilities) {
 			console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.package.name} vulnerability found with severity ${repoVulnerability.securityVulnerability.severity}.`)
