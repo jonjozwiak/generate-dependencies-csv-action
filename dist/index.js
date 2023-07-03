@@ -14482,6 +14482,11 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		`query ($org: String! $repo: String! $cursor: String){
 			repository(owner: $org, name: $repo) {
 				vulnerabilityAlerts(first: 100 after: $cursor) {
+					pageInfo {
+						hasNextPage
+						endCursor
+					}
+			
 					nodes {
 						id
 						createdAt
