@@ -14452,7 +14452,7 @@ const artifactName = `dependency-lists`;
 let files = [];
 let fileLines = [];
 let pagination = null;
-let checkedRepos = (/* unused pure expression or super */ null && ([]));
+let checkedRepos = [];
 let indent = [];
 let firstIndent = false;
 let depth = 0;
@@ -14725,7 +14725,7 @@ async function DumpDependencies() {
 			vulnFileLinesSummary = [];
 			vulnSummaryLines = [];
 			headerRow = "packageName\tpackageVersion\tpackageEcosystem\tmanifestFilename\tmanifestOwner\tpackageLicenseName\tpackageLicenseId\tpackgeLicenseUrl\tpackageHasDependencies\tCriticalVulnerabilities\tHighVulnerabilities\tModerateVulnerabilities\tLowVulnerabilities\n";
-			//await findDeps(org_name, repo);
+			await findDeps(org_name, repo);
 
 			await getVulnerabilityAlerts(org_name, repo);
 
