@@ -37,6 +37,8 @@ graphql = graphql.defaults({
 	}
 });
 
+// Delete this comment
+
 // Add async function to get vulnerabilityAlerts
 const getVulnerabilityAlerts = async (org, repo) => {
 	const query =
