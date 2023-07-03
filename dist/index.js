@@ -14536,7 +14536,7 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		hasNextPage = getVulnResult.repository.vulnerabilityAlerts.pageInfo.hasNextPage;
 		const repoVulnerabilities = getVulnResult.repository.vulnerabilityAlerts.nodes;
 
-		console.log(`vulnerabilities: ${JSON.stringify(getVulnResult, null, 2)}`);
+		// console.log(`vulnerabilities: ${JSON.stringify(getVulnResult, null, 2)}`);
 
 		for (const repoVulnerability of repoVulnerabilities) {
 			console.log(`${indent.join('')}${org}/${repo}: ${repoVulnerability.securityVulnerability.package.name} vulnerability found with severity ${repoVulnerability.securityVulnerability.severity}.`)
@@ -14581,25 +14581,16 @@ const getVulnerabilityAlerts = async (org, repo) => {
 		}
 
 		if (dismissedAt === "null") {
-			console.log(`${packageName} dismissedAt is null.`)
-		}
-
-		if (dismissedAt !== "null") {
-			console.log(`${packageName} dismissedAt is NOT null.`)
-		}
-
-		//if (dismissedAt === null) {
 			if (severity === 'CRITICAL') {
 				vulnFileLinesSummary[packageName].critical++;
 			} else if (severity === 'HIGH') {
 				vulnFileLinesSummary[packageName].high++;
-				console.log(`Adding high severity vulnerability for ${packageName}`)
 			} else if (severity === 'MODERATE') {
 				vulnFileLinesSummary[packageName].moderate++;
 			} else if (severity === 'LOW') {
 				vulnFileLinesSummary[packageName].low++;
 			}
-		//}
+		}
 	}
 
 	for (let packageName in vulnFileLinesSummary) {
